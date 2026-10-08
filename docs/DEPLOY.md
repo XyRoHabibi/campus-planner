@@ -45,7 +45,11 @@ Dashboard Cloudflare → Workers & Pages → Create → Pages → Connect to Git
 | Environment variable `VITE_SUPABASE_URL` | URL project Supabase (Production **dan** Preview) |
 | Environment variable `VITE_SUPABASE_ANON_KEY` | anon/publishable key (Production **dan** Preview) |
 
-- **SPA fallback**: `public/_redirects` (`/*  /index.html  200`) ikut ter-copy ke `dist`, jadi deep link seperti `/tasks` tetap berfungsi.
+- **SPA fallback**: tidak memakai `_redirects` (aturan `/*  /index.html  200` ditolak Cloudflare sebagai loop tak terbatas pada Workers
+  Static Assets). Di Workers, fallback diatur `wrangler.jsonc` (`not_found_handling: "single-page-application"`); di Pages, fallback
+  otomatis selama tidak ada `404.html`. Deep link seperti `/tasks` tetap berfungsi.
+- **Workers vs Pages**: bila proyek dibuat sebagai Workers, *Deploy command* `npx wrangler deploy` memakai `wrangler.jsonc` di repo
+  (aset dari `dist`). `public/_headers` tetap berlaku di keduanya.
 - **Header**: `public/_headers` mengatur (a) `index.html`, `sw.js`, `theme-init.js`, `manifest.webmanifest` **tidak di-cache lama**
   (agar versi lama tidak terus dipakai), (b) `/assets/*` ber-hash di-cache selamanya, dan (c) header keamanan:
   `Content-Security-Policy` (skrip hanya dari origin sendiri; koneksi hanya ke origin sendiri dan `*.supabase.co`),

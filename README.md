@@ -96,7 +96,8 @@ src/
 supabase/
   migrations/          4 migration (skema, RLS, Storage, reminder_enabled)
   tests/               test:db (PGlite) dan test:remote (dua akun, project asli)
-public/                ikon PWA, _headers (cache + CSP), _redirects (SPA fallback), theme-init.js
+public/                ikon PWA, _headers (cache + CSP), theme-init.js
+wrangler.jsonc         Konfigurasi deploy Cloudflare (aset dari dist, SPA fallback)
 docs/                  DEPLOY.md, ACCEPTANCE.md
 ```
 
@@ -122,7 +123,7 @@ docs/                  DEPLOY.md, ACCEPTANCE.md
 ## PWA dan mode offline (Tahap 11)
 
 - **PWA** (`vite-plugin-pwa`/Workbox, `vite.config.ts`): manifest (nama, ikon 192/512/maskable, `theme_color` #4F46E5, shortcut Tugas & Jadwal), ikon PNG di `public/icons` (dirender dari desain `favicon.svg`; ulangi bila logo berubah), dan service worker yang **hanya meng-precache aset aplikasi** (app shell + semua chunk halaman, 54 entri). Sengaja **tidak ada `runtimeCaching`**: respons Supabase (data, Auth, Storage/lampiran) tidak pernah melewati cache service worker (dicek: `sw.js` tidak memuat rujukan ke Supabase). Deep link (`/tasks`, `/calendar`, …) dilayani offline lewat navigation fallback. Service worker tidak aktif saat `npm run dev`.
-- **Pembaruan**: strategi *prompt* — versi baru tidak mengambil alih diam-diam (bisa memutus unggahan); muncul pesan "Versi baru tersedia" dengan tombol **Muat ulang**, dan pembaruan diperiksa tiap jam. `public/_headers` membuat `index.html`, `sw.js`, dan `manifest.webmanifest` tidak di-cache lama, sementara `/assets/*` ber-hash di-cache selamanya; `public/_redirects` memberi SPA fallback (Cloudflare Pages; diterapkan saat deploy di Tahap 12).
+- **Pembaruan**: strategi *prompt* — versi baru tidak mengambil alih diam-diam (bisa memutus unggahan); muncul pesan "Versi baru tersedia" dengan tombol **Muat ulang**, dan pembaruan diperiksa tiap jam. `public/_headers` membuat `index.html`, `sw.js`, dan `manifest.webmanifest` tidak di-cache lama, sementara `/assets/*` ber-hash di-cache selamanya; SPA fallback diatur `wrangler.jsonc` (Cloudflare), bukan `_redirects`.
 - **Instal**: kartu "Instal aplikasi" di Pengaturan menampilkan tombol hanya jika browser menawarkan (`beforeinstallprompt`, ditangkap sejak awal); jika sudah terpasang menampilkan statusnya; selain itu memberi petunjuk jujur (iOS: Bagikan → Tambahkan ke Layar Utama). Pada uji, Edge sendiri menawarkan instalasi sehingga kriteria PWA terpenuhi.
 - **Offline = baca-saja** (prd.md §16, tanpa antrean tulis offline): daftar mata kuliah, jadwal, tugas, dan detail tugas yang terakhir berhasil dimuat disimpan di **IndexedDB** dan dipulihkan saat offline. Tombol tambah/ubah/hapus/selesai dan unggah dinonaktifkan dengan penjelasan; mutasi **tidak** ditahan lalu dijalankan diam-diam saat online (`networkMode: 'always'`), sehingga UI tidak pernah mengklaim tersimpan. Karena tidak ada perubahan lokal yang menunggu, tidak ada status "sinkronisasi tertunda".
 - **Status jujur di UI**: banner offline ("menampilkan data terakhir yang tersimpan di perangkat ini"), status di Beranda/Pengaturan ("Offline · menampilkan data terakhir (dimuat hh:mm)"), dan keadaan **"Belum tersedia saat offline"** untuk halaman yang belum pernah dimuat di perangkat ini (bukan skeleton menggantung). Query gagal yang masih punya data (cache/pemuatan ulang gagal) tidak menyembunyikan datanya (`queryGate`). Saat koneksi pulih data dimuat ulang otomatis.
