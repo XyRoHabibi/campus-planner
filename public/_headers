@@ -1,0 +1,29 @@
+# Cloudflare Pages — header respons. Diterapkan saat deploy (lihat docs/DEPLOY.md); tidak berlaku di `vite preview`.
+#
+# Berkas yang menentukan versi aplikasi TIDAK boleh di-cache lama, agar versi lama tidak terus dipakai.
+# Aset ber-hash dari build aman di-cache selamanya.
+#
+# Content-Security-Policy: skrip hanya dari origin sendiri. connect-src/img-src mengizinkan Supabase
+# (data, Auth, Storage + signed URL). Jika project Supabase memakai custom domain, tambahkan domain itu
+# ke connect-src dan img-src. style-src 'unsafe-inline' diperlukan karena pustaka toast (sonner)
+# menyisipkan elemen <style> saat runtime.
+
+/index.html
+  Cache-Control: no-cache
+/sw.js
+  Cache-Control: no-cache
+/theme-init.js
+  Cache-Control: no-cache
+/manifest.webmanifest
+  Cache-Control: no-cache
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+/icons/*
+  Cache-Control: public, max-age=86400
+
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.supabase.co; font-src 'self'; connect-src 'self' https://*.supabase.co; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'

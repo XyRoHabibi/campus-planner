@@ -1,0 +1,2 @@
+-- Sengaja kosong. Akun dibuat manual lewat dashboard Supabase (tanpa signup publik),
+-- dan data contoh tidak dimasukkan agar tidak ada data palsu di database sungguhan.
